@@ -1,0 +1,7 @@
+export interface Comment {
+    id: string;
+    name: string; 
+    text: string;
+    createdAt: string;
+  }
+  
