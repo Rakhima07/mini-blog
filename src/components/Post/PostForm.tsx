@@ -1,46 +1,36 @@
 import React from 'react';
-import { TextField, Button } from '@mui/material';
-
 
 interface PostFormProps {
-    title: string;
-    setTitle: (value: string) => void;
-    content: string;
-    setContent: (value: string) => void;
-    onSubmit: () => void;
-  }
-  
-  const PostForm: React.FC<PostFormProps> = ({ title, setTitle, content, setContent, onSubmit }) => {
-    return (
-      <form onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit();
-      }}>
-        <TextField
-          label="Заголовок"
-          variant="outlined"
-          fullWidth
+  title: string;
+  setTitle: React.Dispatch<React.SetStateAction<string>>;
+  content: string;
+  setContent: React.Dispatch<React.SetStateAction<string>>;
+  onSubmit: () => void;
+}
+
+const PostForm: React.FC<PostFormProps> = ({ title, setTitle, content, setContent, onSubmit }) => {
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
+      <div>
+        <label>Заголовок:</label>
+        <input
+          type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          required
-          margin="normal"
+          placeholder="Введите заголовок"
         />
-        <TextField
-          label="Содержание"
-          variant="outlined"
-          fullWidth
-          multiline
-          rows={4}
+      </div>
+      <div>
+        <label>Содержание:</label>
+        <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          required
-          margin="normal"
+          placeholder="Введите содержание"
         />
-        <Button variant="contained" type="submit" color="primary">
-          Создать пост
-        </Button>
-      </form>
-    );
-  };
-  
-  export default PostForm;
+      </div>
+      <button type="submit">Создать пост</button>
+    </form>
+  );
+};
+
+export default PostForm;

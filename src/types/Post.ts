@@ -1,9 +1,14 @@
+export interface Comment {
+  id: string;
+  name: string;
+  text: string;
+}
 
 export interface Post {
-  id: string;  
+  id: string;
   title: string;
   content: string;
   likes: number;
-  comments: Comment[]; 
+  comments: Comment[];
   createdAt: string;
 }
