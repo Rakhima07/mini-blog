@@ -1,43 +1,29 @@
-// src/pages/post/PostCreate.tsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createPost } from '../../axiosApi/axiosApi'; // Убедитесь, что импорт корректен
-import PostForm from '../../components/Post/PostForm';
+import React, { useState } from "react";
+import { createPost } from "../../services/postApi";
+import { useNavigate } from "react-router-dom";
+import { TextField, Button, Container } from "@mui/material";
 
-const CreatePostPage: React.FC = () => {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+const PostCreate: React.FC = () => {
+  const [title, setTitle] = useState("");
+  const [text, setText] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
-    const newPost = { 
-      title, 
-      content, 
-      likes: 0, 
-      comments: [], 
-      createdAt: new Date().toISOString() 
-    };
-
-    try {
-      await createPost(newPost);  // Убедитесь, что функция createPost работает корректно
-      navigate('/'); // Перенаправление на главную страницу после создания поста
-    } catch (error) {
-      console.error('Ошибка при создании поста:', error);
-    }
+    await createPost({ title, text, imageUrl, likes: 0 });
+    navigate("/");
   };
 
   return (
-    <div>
-      <h1>Создать новый пост</h1>
-      <PostForm 
-        title={title} 
-        setTitle={setTitle} 
-        content={content} 
-        setContent={setContent} 
-        onSubmit={handleSubmit} 
-      />
-    </div>
+    <Container>
+      <TextField label="Заголовок" fullWidth onChange={(e) => setTitle(e.target.value)} />
+      <TextField label="Текст" fullWidth multiline rows={4} onChange={(e) => setText(e.target.value)} />
+      <TextField label="Ссылка на изображение" fullWidth onChange={(e) => setImageUrl(e.target.value)} />
+      <Button onClick={handleSubmit} variant="contained" color="primary">
+        Опубликовать
+      </Button>
+    </Container>
   );
 };
 
-export default CreatePostPage;
+export default PostCreate;

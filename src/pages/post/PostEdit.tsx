@@ -1,108 +1,73 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { TextField, Button, Container, Typography } from '@mui/material';
-import { Post } from '../../types/Post';
-import { getPostById, updatePost } from '../../axiosApi/axiosApi.ts';
+import { Container, Box, TextField, Button, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getPostById, updatePost } from "../../services/postApi"; // Убедись, что эти функции есть в postApi.ts
 
-const PostEditPage = () => {
-  const { id } = useParams(); 
+const EditPost = () => {
+  const { id } = useParams<{ id: string }>(); // Получаем ID поста из URL
   const navigate = useNavigate();
+  
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
 
-  const [post, setPost] = useState<Post | null>(null);
-  const [title, setTitle] = useState<string>('');
-  const [content, setContent] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>('');
-
+  
   useEffect(() => {
-    const fetchPost = async () => {
-      if (id) {
-        try {
-          const postData = await getPostById(id); 
-          if (!postData) {
-            setError('Пост не найден');
-            return;
-          }
-          setPost(postData);
-          setTitle(postData.title);
-          setContent(postData.content);
-        } catch (err) {
-          setError('Ошибка при загрузке поста');
-          console.error('Ошибка при загрузке поста:', err);
-        } finally {
-          setLoading(false);
+    if (id) {
+      getPostById(id).then((post) => {
+        if (post) {
+          setTitle(post.title);
+          setContent(post.text); 
         }
-      }
-    };
-
-    fetchPost();
+      });
+    }
   }, [id]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
 
-    if (!id) return; 
-
-    const updatedPost: Post = {
-      id,
-      title,
-      content,
-      likes: post?.likes || 0,
-      comments: post?.comments || [],
-      createdAt: post?.createdAt || new Date().toISOString(),
-    };
-
-    try {
-      await updatePost(id, updatedPost); 
-      navigate(`/post/${id}`); 
-    } catch (err) {
-      setError('Ошибка при обновлении поста');
-      console.error('Ошибка при обновлении поста:', err);
+  const handleSave = async () => {
+    if (id) {
+      await updatePost(id, { title, text: content }); 
+      console.log("Сохранено:", { title, content });
+      navigate(`/post/${id}`);
     }
   };
 
-  if (loading) {
-    return <Typography>Загрузка...</Typography>;
-  }
-
-  if (!post) {
-    return <Typography>Пост не найден.</Typography>;
-  }
-
   return (
-    <Container>
-      <Typography variant="h4" gutterBottom>
-        Редактировать пост
+    <Container maxWidth="md">
+      <Typography variant="h4" sx={{ mt: 4, mb: 2, textAlign: "center" }}>
+        Редактирование поста
       </Typography>
-      {error && <Typography color="error">{error}</Typography>}
-      <form onSubmit={handleSubmit}>
+      <Box
+        component="form"
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          maxWidth: 600,
+          margin: "0 auto",
+        }}
+      >
         <TextField
           label="Заголовок"
           variant="outlined"
           fullWidth
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          required
-          margin="normal"
         />
         <TextField
           label="Содержание"
           variant="outlined"
           fullWidth
           multiline
-          rows={4}
+          minRows={3}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          required
-          margin="normal"
         />
-        <Button variant="contained" type="submit" color="primary">
+        <Button variant="contained" color="primary" onClick={handleSave}>
           Сохранить
         </Button>
-      </form>
+      </Box>
     </Container>
   );
 };
 
-export default PostEditPage;
-
+export default EditPost;

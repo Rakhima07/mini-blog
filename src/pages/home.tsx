@@ -1,62 +1,45 @@
-import { useEffect, useState } from 'react';
-import { getPosts } from '../axiosApi/axiosApi.ts';
-import PostCard from '../components/Post/PostCard';
-import { Post } from '../types/Post';
-import { Container, Typography, Grid, Button, CircularProgress } from '@mui/material';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { getPosts, updateLikes } from "../services/postApi";
+import { Post } from "../types/Post";
+import { Container, Grid, Typography, Button } from "@mui/material";
+import PostCard from "../components/PostCard";
+import { Link } from "react-router-dom";
 
-const HomePage = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+const Home: React.FC = () => {
+  const [posts, setPosts] = useState<{ [key: string]: Post }>({});
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const data = await getPosts();
-        setPosts(data);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(`Ошибка при загрузке постов: ${err.message}`);
-        } else {
-          setError('Неизвестная ошибка');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPosts();
+    getPosts().then(setPosts);
   }, []);
 
-  if (loading) return <CircularProgress style={{ display: 'block', margin: 'auto' }} />;
-  if (error) return <Typography color="error" align="center">{error}</Typography>;
+  const handleLike = async (id: string, likes: number) => {
+    const newLikes = likes + 1;
+    await updateLikes(id, newLikes);
+    setPosts((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], likes: newLikes },
+    }));
+  };
 
   return (
     <Container>
-      <Typography variant="h3" gutterBottom align="center">
-        Все посты
+      <Typography variant="h4" gutterBottom>
+        Мини-Блог
       </Typography>
-      
-      <Button 
-        component={Link} 
-        to="/create" 
-        variant="contained" 
-        color="primary" 
-        style={{ marginBottom: '20px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
-      >
-        Создать новый пост
+      {Object.keys(posts).length === 0 ? (
+        <Typography>Здесь пока нет постов. Создайте первый!</Typography>
+      ) : (
+        <Grid container spacing={3}>
+          {Object.entries(posts).map(([id, post]) => (
+            <PostCard key={id} post={{ ...post, id }} onLike={() => handleLike(id, post.likes)} />
+          ))}
+        </Grid>
+      )}
+      <Button variant="contained" color="primary" component={Link} to="/create">
+        Создать пост
       </Button>
-
-      <Grid container spacing={2}>
-        {posts.map((post) => (
-          <Grid item xs={12} sm={6} md={4} key={post.id}>
-            <PostCard post={post} />
-          </Grid>
-        ))}
-      </Grid>
     </Container>
   );
 };
 
-export default HomePage;
+export default Home;
